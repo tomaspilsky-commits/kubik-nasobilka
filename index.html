@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🚀 Kubíkova Násobilka</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1b2a;
+  --card:#1b2d42;
+  --card2:#243347;
+  --accent:#ffd60a;
+  --accent2:#ff9f1c;
+  --success:#4ade80;
+  --error:#f87171;
+  --text:#f0f4f8;
+  --text2:#8fa3b8;
+  --border:rgba(255,255,255,0.1);
+}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.star{position:absolute;background:white;border-radius:50%;animation:twinkle var(--d,3s) var(--del,0s) infinite ease-in-out}
+@keyframes twinkle{0%,100%{opacity:.15;transform:scale(1)}50%{opacity:.9;transform:scale(1.3)}}
+.app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:1.25rem 1rem 3rem}
+.nav-bar{width:100%;max-width:540px;display:flex;justify-content:space-between;align-items:center;margin-bottom:1.75rem}
+.logo{font-family:'Fredoka One',cursive;font-size:1.35rem;color:var(--accent)}
+.btn-ghost{background:var(--card);border:1px solid var(--border);color:var(--text);padding:.45rem 1rem;border-radius:12px;cursor:pointer;font-family:'Nunito',sans-serif;font-size:.85rem;font-weight:700;transition:all .2s}
+.btn-ghost:hover{background:var(--card2);transform:translateY(-1px)}
+.screen{display:none;width:100%;max-width:520px}
+.screen.active{display:block}
+.card{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:2rem}
+
+/* ── SETUP ── */
+.setup-title{font-family:'Fredoka One',cursive;font-size:clamp(2rem,7vw,2.8rem);color:var(--accent);text-align:center;margin-bottom:.4rem}
+.setup-sub{text-align:center;color:var(--text2);font-size:1rem;margin-bottom:1.75rem}
+.lbl{font-size:.8rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:.6rem}
+.big-input{width:100%;background:var(--bg);border:2px solid var(--border);border-radius:16px;color:var(--text);font-family:'Fredoka One',cursive;font-size:3rem;text-align:center;padding:.85rem;outline:none;transition:border-color .2s;-moz-appearance:textfield}
+.big-input::-webkit-outer-spin-button,.big-input::-webkit-inner-spin-button{-webkit-appearance:none}
+.big-input:focus{border-color:var(--accent)}
+.presets{display:flex;gap:.5rem;margin-top:.9rem;flex-wrap:wrap;justify-content:center}
+.preset-btn{background:var(--card2);border:1px solid var(--border);color:var(--text2);padding:.4rem 1.1rem;border-radius:20px;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:800;font-size:.95rem;transition:all .2s}
+.preset-btn:hover{background:var(--accent);color:#111;border-color:var(--accent)}
+.btn-primary{width:100%;margin-top:1.5rem;background:var(--accent);color:#111;border:none;border-radius:16px;padding:1rem;font-family:'Fredoka One',cursive;font-size:1.35rem;cursor:pointer;transition:all .2s;letter-spacing:.02em}
+.btn-primary:hover{transform:translateY(-2px);filter:brightness(1.08)}
+.btn-primary:active{transform:scale(.98)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* ── QUIZ ── */
+.progress-wrap{margin-bottom:1.25rem}
+.progress-info{display:flex;justify-content:space-between;font-size:.85rem;font-weight:700;color:var(--text2);margin-bottom:.4rem}
+.progress-bg{background:var(--card);border-radius:100px;height:10px;overflow:hidden}
+.progress-fill{background:linear-gradient(90deg,var(--accent),var(--accent2));height:100%;border-radius:100px;transition:width .5s cubic-bezier(.34,1.56,.64,1)}
+.problem-card{background:var(--card);border:2px solid var(--border);border-radius:28px;padding:2.5rem 2rem;text-align:center;margin-bottom:1.25rem;transition:border-color .3s,box-shadow .3s}
+.problem-card.correct{border-color:var(--success);box-shadow:0 0 32px rgba(74,222,128,.2)}
+.problem-card.wrong{border-color:var(--error);box-shadow:0 0 32px rgba(248,113,113,.2)}
+.problem-number{font-family:'Fredoka One',cursive;font-size:clamp(3rem,13vw,5rem);color:var(--text);letter-spacing:.04em;line-height:1.1}
+.problem-number .mult{color:var(--accent)}
+.feedback-msg{font-size:1.05rem;font-weight:700;margin-top:.9rem;min-height:1.5rem;color:var(--success);transition:color .2s}
+.feedback-msg.wrong{color:var(--error)}
+.answer-input{width:100%;background:var(--bg);border:2px solid var(--border);border-radius:16px;color:var(--text);font-family:'Fredoka One',cursive;font-size:2.5rem;text-align:center;padding:.7rem;outline:none;transition:border-color .2s;-moz-appearance:textfield;margin-bottom:1rem}
+.answer-input::-webkit-outer-spin-button,.answer-input::-webkit-inner-spin-button{-webkit-appearance:none}
+.answer-input:focus{border-color:var(--accent)}
+.answer-input:disabled{opacity:.6}
+
+/* ── RESULTS ── */
+.results-hero{text-align:center;margin-bottom:1.5rem}
+.result-emoji{font-size:3.5rem;margin-bottom:.4rem}
+.score-big{font-family:'Fredoka One',cursive;font-size:clamp(3rem,11vw,4.5rem);color:var(--accent)}
+.score-sub{color:var(--text2);font-size:.95rem;font-weight:700;margin-top:.25rem}
+.problems-list{display:flex;flex-direction:column;gap:.45rem;margin-bottom:1.5rem;max-height:380px;overflow-y:auto;padding-right:2px}
+.prow{display:flex;align-items:center;justify-content:space-between;background:var(--card2);border-radius:12px;padding:.7rem 1rem;font-weight:700;gap:.5rem}
+.prow .expr{font-family:'Fredoka One',cursive;font-size:1.1rem;min-width:80px}
+.prow .ans-info{font-size:.82rem;color:var(--text2);flex:1;text-align:center}
+.prow .badge{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;font-weight:900}
+.badge-ok{background:rgba(74,222,128,.15);color:var(--success)}
+.badge-err{background:rgba(248,113,113,.15);color:var(--error)}
+
+/* ── DASHBOARD ── */
+.dash-header{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem}
+.dash-title{font-family:'Fredoka One',cursive;font-size:1.7rem;color:var(--accent)}
+.no-history{text-align:center;color:var(--text2);font-style:italic;padding:2rem 0}
+.history-list{display:flex;flex-direction:column;gap:.9rem}
+.hitem{background:var(--card2);border:1px solid var(--border);border-radius:18px;padding:1.1rem 1.25rem}
+.hitem-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.6rem}
+.hdate{font-size:.8rem;color:var(--text2)}
+.hmeta{font-size:.8rem;color:var(--text2)}
+.hscore{font-family:'Fredoka One',cursive;font-size:1.6rem}
+.hscore.high{color:var(--success)}
+.hscore.mid{color:var(--accent)}
+.hscore.low{color:var(--error)}
+.wrong-pills{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.5rem}
+.wpill{background:rgba(248,113,113,.12);color:var(--error);border:1px solid rgba(248,113,113,.25);border-radius:7px;padding:.15rem .55rem;font-size:.78rem;font-weight:800;font-family:'Fredoka One',cursive}
+.all-ok{font-size:.8rem;color:var(--success);margin-top:.4rem}
+
+/* ── CONFETTI ── */
+.confetti-wrap{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999}
+.cpiece{position:absolute;animation:cfall var(--cd,3.5s) var(--cdel,0s) cubic-bezier(.25,.1,.25,1) forwards}
+.cpiece.big{animation:cfall-big var(--cd,5s) var(--cdel,0s) cubic-bezier(.2,.6,.4,1) forwards}
+.cpiece.burst{animation:cburst var(--cd,2.8s) var(--cdel,0s) ease-out forwards}
+@keyframes cfall{
+  0%  {transform:translateY(-10px) rotate(0deg) scaleX(1);opacity:1}
+  20% {opacity:1}
+  80% {opacity:.9}
+  100%{transform:translateY(102vh) rotate(480deg) scaleX(var(--flip,1));opacity:0}
+}
+@keyframes cfall-big{
+  0%  {transform:translateY(-20px) translateX(0) rotate(0deg) scale(1);opacity:1}
+  15% {opacity:1;transform:translateY(8vh) translateX(var(--sx,0px)) rotate(60deg) scale(1.1)}
+  85% {opacity:1}
+  100%{transform:translateY(102vh) translateX(var(--ex,0px)) rotate(var(--rot,720deg)) scale(.8);opacity:0}
+}
+@keyframes cburst{
+  0%  {transform:translate(0,0) rotate(0deg) scale(1);opacity:1}
+  60% {opacity:1}
+  100%{transform:translate(var(--bx,0px),var(--by,120px)) rotate(var(--rot,360deg)) scale(.6);opacity:0}
+}
+
+@media(max-width:480px){
+  .card{padding:1.4rem}
+  .problem-card{padding:2rem 1.25rem}
+  .problems-list{max-height:320px}
+}
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+<div class="app">
+  <nav class="nav-bar">
+    <div class="logo">🚀 Kubíkova Násobilka</div>
+    <button class="btn-ghost" onclick="showDashboard()">📊 Historie</button>
+  </nav>
+
+  <!-- SETUP -->
+  <div class="screen active" id="screen-setup">
+    <h1 class="setup-title">Ahoj, Kubíku! 👋</h1>
+    <p class="setup-sub">Kolik příkladů chceš dnes procvičit?</p>
+    <div class="card">
+      <label class="lbl" for="count-input">Počet příkladů</label>
+      <input class="big-input" type="number" id="count-input" min="1" max="100" value="10" inputmode="numeric">
+      <div class="presets">
+        <button class="preset-btn" onclick="setCount(5)">5</button>
+        <button class="preset-btn" onclick="setCount(10)">10</button>
+        <button class="preset-btn" onclick="setCount(15)">15</button>
+        <button class="preset-btn" onclick="setCount(20)">20</button>
+        <button class="preset-btn" onclick="setCount(25)">25</button>
+      </div>
+      <button class="btn-primary" onclick="startQuiz()">Jdeme na to! 🚀</button>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="screen" id="screen-quiz">
+    <div class="progress-wrap">
+      <div class="progress-info">
+        <span id="prog-text">Příklad 1 z 10</span>
+        <span id="prog-pct">0 %</span>
+      </div>
+      <div class="progress-bg">
+        <div class="progress-fill" id="prog-bar" style="width:0%"></div>
+      </div>
+    </div>
+    <div class="problem-card" id="problem-card">
+      <div class="problem-number" id="problem-display">3 <span class="mult">×</span> 4</div>
+      <div class="feedback-msg" id="feedback"></div>
+    </div>
+    <input class="answer-input" type="number" id="answer-input" placeholder="?" inputmode="numeric" autocomplete="off">
+    <button class="btn-primary" id="submit-btn" onclick="handleSubmit()">Zkontrolovat ✓</button>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="screen" id="screen-results">
+    <div class="results-hero">
+      <div class="result-emoji" id="res-emoji">🏆</div>
+      <div class="score-big" id="res-score">100 %</div>
+      <div class="score-sub" id="res-sub">Výborně!</div>
+    </div>
+    <div class="card">
+      <div class="problems-list" id="problems-list"></div>
+      <button class="btn-primary" onclick="resetToSetup()">Zkusit znovu 🔄</button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="screen" id="screen-dashboard">
+    <div class="dash-header">
+      <button class="btn-ghost" onclick="backFromDash()">← Zpět</button>
+      <div class="dash-title">📊 Historie testů</div>
+    </div>
+    <div class="card" id="dash-content"></div>
+  </div>
+</div>
+
+<div class="confetti-wrap" id="confetti-wrap"></div>
+
+<script>
+const LS = 'kubik_nasobilka_v1';
+let problems = [], idx = 0, waitNext = false;
+
+/* ── Stars ── */
+(function(){
+  const c = document.getElementById('stars');
+  for(let i=0;i<90;i++){
+    const s = document.createElement('div');
+    s.className='star';
+    const sz = Math.random()*2.5+.5;
+    s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${2+Math.random()*4}s;--del:${Math.random()*6}s`;
+    c.appendChild(s);
+  }
+})();
+
+/* ── Screens ── */
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+/* ── Setup ── */
+function setCount(n){ document.getElementById('count-input').value=n; }
+
+function startQuiz(){
+  const n=parseInt(document.getElementById('count-input').value)||0;
+  if(n<1||n>100){ alert('Zadej číslo od 1 do 100!'); return; }
+  problems=Array.from({length:n},()=>{
+    const a=Math.floor(Math.random()*10)+1;
+    const b=Math.floor(Math.random()*10)+1;
+    return {a,b,answer:a*b,userAnswer:null,correct:null};
+  });
+  idx=0; waitNext=false;
+  show('screen-quiz');
+  renderProblem();
+  setTimeout(()=>document.getElementById('answer-input').focus(),120);
+}
+
+/* ── Quiz ── */
+function renderProblem(){
+  const p=problems[idx], total=problems.length;
+  const pct=Math.round(idx/total*100);
+  document.getElementById('prog-text').textContent=`Příklad ${idx+1} z ${total}`;
+  document.getElementById('prog-pct').textContent=pct+' %';
+  document.getElementById('prog-bar').style.width=pct+'%';
+  document.getElementById('problem-display').innerHTML=`${p.a} <span class="mult">×</span> ${p.b}`;
+  document.getElementById('problem-card').className='problem-card';
+  document.getElementById('feedback').textContent='';
+  document.getElementById('feedback').className='feedback-msg';
+  document.getElementById('answer-input').value='';
+  document.getElementById('answer-input').disabled=false;
+  document.getElementById('submit-btn').textContent='Zkontrolovat ✓';
+  document.getElementById('submit-btn').disabled=false;
+  waitNext=false;
+}
+
+function handleSubmit(){
+  if(waitNext){
+    idx++;
+    if(idx>=problems.length) finishQuiz();
+    else{ renderProblem(); document.getElementById('answer-input').focus(); }
+    return;
+  }
+  const val=document.getElementById('answer-input').value.trim();
+  if(val==='') return;
+  const ua=parseInt(val);
+  if(isNaN(ua)) return;
+  const p=problems[idx];
+  p.userAnswer=ua; p.correct=(ua===p.answer);
+  const card=document.getElementById('problem-card');
+  const fb=document.getElementById('feedback');
+  if(p.correct){
+    card.className='problem-card correct';
+    fb.className='feedback-msg';
+    const msgs=['✅ Správně! Skvělá práce!','✅ Výborně! Tak dál!','✅ Přesně tak! Bravo!','✅ Perfektní!'];
+    fb.textContent=msgs[Math.floor(Math.random()*msgs.length)];
+    confetti('small');
+  } else {
+    card.className='problem-card wrong';
+    fb.className='feedback-msg wrong';
+    fb.textContent=`❌ Špatně. Správná odpověď je ${p.answer}.`;
+  }
+  document.getElementById('answer-input').disabled=true;
+  const isLast=(idx===problems.length-1);
+  document.getElementById('submit-btn').textContent=isLast?'Zobrazit výsledky 📊':'Další příklad →';
+  waitNext=true;
+}
+
+document.getElementById('answer-input').addEventListener('keydown',e=>{ if(e.key==='Enter') handleSubmit(); });
+document.getElementById('count-input').addEventListener('keydown',e=>{ if(e.key==='Enter') startQuiz(); });
+
+/* ── Results ── */
+function finishQuiz(){
+  const correct=problems.filter(p=>p.correct).length;
+  const pct=Math.round(correct/problems.length*100);
+  saveHistory(pct,correct,problems.length,[...problems]);
+  // Score display
+  document.getElementById('res-score').textContent=pct+' %';
+  let emoji,lbl;
+  if(pct===100){emoji='🏆';lbl='Perfektní! Jsi hvězda! 🌟';}
+  else if(pct>=80){emoji='⭐';lbl=`Výborně! ${correct} z ${problems.length} správně!`;}
+  else if(pct>=60){emoji='💪';lbl=`Dobrá práce! ${correct} z ${problems.length}. Zkus ještě jednou!`;}
+  else{emoji='📚';lbl=`${correct} z ${problems.length}. Nevadí, procvič to znovu!`;}
+  document.getElementById('res-emoji').textContent=emoji;
+  document.getElementById('res-sub').textContent=lbl;
+  // Problem list
+  document.getElementById('problems-list').innerHTML=problems.map(p=>`
+    <div class="prow">
+      <span class="expr">${p.a} × ${p.b}</span>
+      <span class="ans-info">${p.correct?`= ${p.answer}`:`Tvoje: ${p.userAnswer} · Správně: ${p.answer}`}</span>
+      <span class="badge ${p.correct?'badge-ok':'badge-err'}">${p.correct?'✓':'✗'}</span>
+    </div>`).join('');
+  show('screen-results');
+  if(pct===100) confetti('big');
+}
+
+function resetToSetup(){ show('screen-setup'); }
+
+/* ── History ── */
+function getHistory(){ try{ return JSON.parse(localStorage.getItem(LS))||[]; }catch{ return []; } }
+
+function saveHistory(pct,correct,total,probs){
+  const h=getHistory();
+  h.unshift({
+    id:Date.now(),
+    date:new Date().toLocaleString('cs-CZ',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}),
+    pct,correct,total,
+    wrongs:probs.filter(p=>!p.correct).map(p=>`${p.a}×${p.b}`)
+  });
+  localStorage.setItem(LS,JSON.stringify(h));
+}
+
+function showDashboard(){
+  const h=getHistory();
+  const el=document.getElementById('dash-content');
+  if(!h.length){ el.innerHTML='<p class="no-history">Zatím žádné testy. Jdeme na to! 🚀</p>'; }
+  else{
+    el.innerHTML=`<div class="history-list">${h.map(item=>{
+      const cls=item.pct>=80?'high':item.pct>=60?'mid':'low';
+      const wrongs=item.wrongs.length
+        ?`<div class="wrong-pills">${item.wrongs.map(w=>`<span class="wpill">${w}</span>`).join('')}</div>`
+        :`<div class="all-ok">✅ Vše správně!</div>`;
+      return `<div class="hitem">
+        <div class="hitem-top">
+          <div><div class="hdate">${item.date}</div><div class="hmeta">${item.total} příkladů · ${item.correct} správně</div></div>
+          <div class="hscore ${cls}">${item.pct} %</div>
+        </div>${wrongs}</div>`;
+    }).join('')}</div>`;
+  }
+  show('screen-dashboard');
+}
+
+function backFromDash(){ show('screen-setup'); }
+
+/* ── Confetti ── */
+function confetti(mode){
+  const wrap=document.getElementById('confetti-wrap');
+  const cols=['#ffd60a','#4ade80','#60a5fa','#f87171','#c084fc','#fb923c','#ffffff','#38bdf8','#f472b6','#a3e635'];
+  const isBig=(mode==='big');
+
+  if(isBig){
+    /* BIG: slow falling pieces across full screen */
+    const count=160;
+    for(let i=0;i<count;i++){
+      const p=document.createElement('div');
+      p.className='cpiece big';
+      const isStrip=Math.random()>.55;
+      const w=isStrip?6+Math.random()*6:14+Math.random()*18;
+      const h=isStrip?22+Math.random()*28:w;
+      const br=isStrip?'3px':Math.random()>.4?'50%':'4px';
+      const sx=(Math.random()-.5)*60;
+      const ex=(Math.random()-.5)*120;
+      const rot=360+Math.floor(Math.random()*3)*360;
+      const dur=3.8+Math.random()*2.4;
+      const del=Math.random()*1.2;
+      p.style.cssText=`left:${Math.random()*100}%;top:-30px;width:${w}px;height:${h}px;background:${cols[Math.floor(Math.random()*cols.length)]};border-radius:${br};--cd:${dur}s;--cdel:${del}s;--sx:${sx}px;--ex:${ex}px;--rot:${rot}deg`;
+      wrap.appendChild(p);
+      setTimeout(()=>p.remove(),(dur+del)*1000+300);
+    }
+    /* Extra burst from center-top for fanfare feel */
+    for(let i=0;i<50;i++){
+      const p=document.createElement('div');
+      p.className='cpiece burst';
+      const ang=Math.random()*Math.PI;
+      const dist=160+Math.random()*260;
+      const bx=Math.cos(ang)*dist*(Math.random()>.5?1:-1);
+      const by=Math.sin(ang)*dist+80;
+      const sz=10+Math.random()*20;
+      const dur=2.2+Math.random()*1.6;
+      const del=Math.random()*.5;
+      p.style.cssText=`left:calc(50% - ${sz/2}px);top:10vh;width:${sz}px;height:${sz}px;background:${cols[Math.floor(Math.random()*cols.length)]};border-radius:${Math.random()>.4?'50%':'4px'};--cd:${dur}s;--cdel:${del}s;--bx:${bx}px;--by:${by}px;--rot:${(Math.random()-.5)*720}deg`;
+      wrap.appendChild(p);
+      setTimeout(()=>p.remove(),(dur+del)*1000+300);
+    }
+  } else {
+    /* SMALL: fanfare burst from top of problem card */
+    const count=38;
+    for(let i=0;i<count;i++){
+      const p=document.createElement('div');
+      p.className='cpiece burst';
+      const ang=(Math.random()*Math.PI)*.9+.05;
+      const dist=80+Math.random()*200;
+      const bx=Math.cos(ang)*dist*(Math.random()>.5?1:-1);
+      const by=Math.sin(ang)*dist+40;
+      const sz=7+Math.random()*11;
+      const isStrip=Math.random()>.65;
+      const w=isStrip?4+Math.random()*4:sz;
+      const h=isStrip?14+Math.random()*16:sz;
+      const dur=2.0+Math.random()*1.4;
+      const del=Math.random()*.2;
+      p.style.cssText=`left:calc(50% - ${w/2}px);top:35vh;width:${w}px;height:${h}px;background:${cols[Math.floor(Math.random()*cols.length)]};border-radius:${isStrip?'3px':Math.random()>.4?'50%':'3px'};--cd:${dur}s;--cdel:${del}s;--bx:${bx}px;--by:${by}px;--rot:${(Math.random()-.5)*540}deg`;
+      wrap.appendChild(p);
+      setTimeout(()=>p.remove(),(dur+del)*1000+300);
+    }
+  }
+}
+</script>
+</body>
+</html>
